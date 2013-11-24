@@ -28,12 +28,10 @@ void test_finite_difference(){
 }
 
 void test_nonstaggered_grid(){
-    ArrayXXf b(10, 10);
-    Grid p1(&b, 1, 4, 1, 4), 
-         p2(&b, 4, 7, 1, 4), 
-         p3(&b, 1, 7, 1, 4);
-    b.setRandom();
-    cout << b << endl << endl;
+    ProgVariable b(10, 10);
+    Grid p1(b, 1, 4, 1, 4), 
+         p2(b, 4, 7, 1, 4), 
+         p3(b, 1, 7, 1, 4);
     cout << p1.main() << endl << endl;
     cout << p2.main() << endl << endl;
     cout << p3.main() << endl << endl;
@@ -43,18 +41,19 @@ void test_nonstaggered_grid(){
 }
 
 void test_staggered_grid(){
-    Grid p1;
-    ArrayXXf a(5, 6);
-    a << 0,2,3,4,1,0,
+    ProgVariable a(5, 6);
+    a.value << 0,2,3,4,1,0,
         0,5,6,4,2,0,
         0,8,9,4,3,0,
         0,2,1,4,2,0,
         0,5,1,4,6,0;
-    StagGridy x1(&a, 1, 4, 1, 5);
+    StagGridy x1(a, 1, 4, 1, 5);
+    cout << a.value << endl << endl;
+    cout << a.tendency << endl << endl;
+    //Grid p1;
     //p1.domain = &a;
     //p1.istart = 1; p1.iend = 3;
     //p1.jstart = 1; p1.jend = 4;
-    cout << a << endl << endl;
     //cout << p1.main() << endl << endl;
     //cout << p1.mainq() << endl << endl;
     //x1.main() += 2;
@@ -65,53 +64,53 @@ void test_staggered_grid(){
 }
 
 void test_dynamics(){
-    ArrayXXf a(10, 10);
-    ArrayXXf u(11, 10);
-    ArrayXXf v(10, 11);
+    ProgVariable a(10, 10);
+    ProgVariable u(11, 10);
+    ProgVariable v(10, 11);
     Dynamics dyn;
-    a.setRandom();
-    u.setRandom(); 
-    u.row(0).setZero(); u.row(u.rows() - 1).setZero();
-    u.row(1).setZero(); u.row(u.rows() - 2).setZero();
-    v.setRandom(); 
-    v.col(0).setZero(); v.col(v.cols() - 1).setZero();
-    v.col(1).setZero(); v.col(v.cols() - 2).setZero();
+    u.value.row(0).setZero(); 
+    u.value.row(u.nrows - 1).setZero();
+    u.value.row(1).setZero(); 
+    u.value.row(u.nrows - 2).setZero();
+    v.value.col(0).setZero(); 
+    v.value.col(v.ncols - 1).setZero();
+    v.value.col(1).setZero(); 
+    v.value.col(v.ncols - 2).setZero();
 
-    Grid pa(&a, 1, 9, 1, 9);
-    StagGridx pu(&u, 1, 10, 1, 9);
-    StagGridy pv(&v, 1, 9, 1, 10);
-    //cout << v << endl << endl;
-    //cout << pa.main() << endl << endl;
-    //cout << "sum = " << pa.main().sum() << endl << endl;
+    cout << "==================== initial value ==================== " <<  endl;
+    Grid pa(a, 1, 9, 1, 9);
+    StagGridx pu(u, 1, 10, 1, 9);
+    StagGridy pv(v, 1, 9, 1, 10);
+    cout << pa.main() << endl << endl;
     cout << pu.main() << endl << endl;
     cout << pv.main() << endl << endl;
-    //dyn.advection(1, pu, pv, pa);
-    //pa.update();
-    //cout << a << endl << endl;
-    //cout << "new sum = " << pa.main().sum() << endl << endl;
-    /*
+
+    cout << "==================== original domain ==================== " <<  endl;
+    dyn.advection(1, pu, pv, pa);
     dyn.self_advection(1, pu, pv);
-    pu.update(); pv.update();
-    cout << pu.main() << endl << endl;
-    cout << pv.main() << endl << endl;
-    */
-    Grid p1a(&a, 1, 5, 1, 9);
-    StagGridx p1u(&u, 1, 6, 1, 9);
-    StagGridy p1v(&v, 1, 5, 1, 10);
-    Grid p2a(&a, 5, 9, 1, 9);
-    StagGridx p2u(&u, 5, 10, 1, 9);
-    StagGridy p2v(&v, 5, 9, 1, 10);
-    //dyn.advection(1, p1u, p1v, p1a);
-    //dyn.advection(1, p2u, p2v, p2a);
-    //p1a.update(); p2a.update();
-    //cout << "new sum = " << pa.main().sum() << endl << endl;
-    //cout << a << endl << endl;
+    cout << "sum = " << pa.main_t().sum() << endl << endl;
+    cout << pa.main() + pa.main_t()<< endl << endl;
+    cout << pu.main() + pu.main_t()<< endl << endl;
+    cout << pv.main() + pv.main_t()<< endl << endl;
+
+    cout << "==================== domain decomposition ==================== " <<  endl;
+    
+    Grid p1a(a, 1, 5, 1, 9);
+    Grid p2a(a, 5, 9, 1, 9);
+    StagGridx p1u(u, 1, 6, 1, 9);
+    StagGridy p1v(v, 1, 5, 1, 10);
+    StagGridx p2u(u, 5, 10, 1, 9);
+    StagGridy p2v(v, 5, 9, 1, 10);
+    dyn.advection(1, p1u, p1v, p1a);
+    dyn.advection(1, p2u, p2v, p2a);
     dyn.self_advection(1, p1u, p1v);
     dyn.self_advection(1, p2u, p2v);
-    p1u.update(); p1v.update();
-    p2u.update(); p2v.update();
-    cout << pu.main() << endl << endl;
-    cout << pv.main() << endl << endl;
+    cout << p1a.main() + p1a.main_t() << endl;
+    cout << p2a.main() + p2a.main_t() << endl << endl;
+    cout << p1u.main() + p1u.main_t() << endl;
+    cout << p2u.main() + p2u.main_t() << endl << endl;
+    cout << p1v.main() + p1v.main_t()<< endl;
+    cout << p2v.main() + p2v.main_t()<< endl << endl;
 }
 
 int main(){
@@ -119,5 +118,5 @@ int main(){
     //test_finite_difference();
     //test_nonstaggered_grid();
     //test_staggered_grid();
-    //test_dynamics();
+    test_dynamics();
 }

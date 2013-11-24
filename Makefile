@@ -5,7 +5,7 @@ CC = g++
 CLIB = -L/usr/lib64 -lnetcdf_c++
 CINC = -I/usr/include -I. -I $(EIGEN_DIR) -I $(ODEINT_DIR) -I $(STLIB_DIR)
 CFLAG = -O3 -msse2 -std=c++0x -fopenmp
-MAIN = Main2
+MAIN = Main
 EXE = run
 ADDONS = Include.hh NumericalMethod.hh Grid.hh Dynamics.hh\
 

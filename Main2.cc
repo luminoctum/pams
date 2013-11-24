@@ -1,7 +1,6 @@
 #define EIGEN_RUNTIME_NO_MALLOC
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include "Grid.hh"
 //#include "Dynamics.hh"
 //#include "Advection.hh"
@@ -28,13 +27,14 @@ void test_finite_difference(){
 }
 
 void test_nonstaggered_grid(){
-    ArrayXXf b[2];
-    b[0].setRandom(10, 10);
-    b[1].setZero(10, 10);
-    Grid p1(&b, 1, 4, 1, 4), 
-         p2(&b, 4, 7, 1, 4), 
-         p3(&b, 1, 7, 1, 4);
-    cout << b << endl << endl;
+    ProgVariable b;
+    b.value.setRandom(10, 10);
+    b.tendency.setZero(10, 10);
+    cout << b.value << endl << endl;
+    cout << b.tendency << endl << endl;
+    Grid p1(b, 1, 4, 1, 4), 
+         p2(b, 4, 7, 1, 4), 
+         p3(b, 1, 7, 1, 4);
     cout << p1.main() << endl << endl;
     cout << p2.main() << endl << endl;
     cout << p3.main() << endl << endl;

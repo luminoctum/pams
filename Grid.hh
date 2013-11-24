@@ -1,11 +1,13 @@
 #ifndef GRID
 #define GRID
 #include "NumericalMethod.hh"
+#include "ProgVariable.hh"
 
 class Grid{
 protected:
     FiniteInterpolation<OINTERP> half;
-    ArrayXXf **domain, buffer;
+    ArrayXXf *patch, *patch_t;
+    ArrayXXf buffer;
     std::string name;
     int istart, jstart, iend, jend; // start and end index, end is not included
     int is, ie, js, je;
@@ -13,41 +15,47 @@ protected:
 
 public:
     Grid(){};
-    Grid(ArrayXXf **_domain, int _istart, int _iend, int _jstart, int _jend){
+    Grid(ProgVariable &var, int _istart, int _iend, int _jstart, int _jend){
         halo        = OINTERP / 2;
-        domain[0]   = _domain[0];
-        domain[1]   = _domain[1];
+        patch       = &var.value;
+        patch_t     = &var.tendency;
         istart      = _istart;
         iend        = _iend;
         jstart      = _jstart;
         jend        = _jend;
         is          = MAX2(istart - halo, 0);
-        ie          = MIN2(iend + halo, domain[0]->rows());
+        ie          = MIN2(iend + halo, patch->rows());
         js          = MAX2(jstart - halo, 0);
-        je          = MIN2(jend + halo, domain[0]->cols());
+        je          = MIN2(jend + halo, patch->cols());
     }
     inline Block<ArrayXXf> main(){
-        return domain[0]->block(
+        return patch->block(
+                istart, jstart,
+                iend - istart, jend - jstart
+                );
+    }
+    inline Block<ArrayXXf> main_t(){
+        return patch_t->block(
                 istart, jstart,
                 iend - istart, jend - jstart
                 );
     }
     inline Block<ArrayXXf> mainx(){
-        buffer = half.x(domain[0]->block(
+        buffer = half.x(patch->block(
                 is, jstart, 
                 ie - is, jend - jstart
                 ));
         return buffer.block(istart - is - 1, 0, iend - istart + 1, jend - jstart);
     }
     inline Block<ArrayXXf> mainy(){
-        buffer = half.y(domain[0]->block(
+        buffer = half.y(patch->block(
                 istart, js, 
                 iend - istart, je - js
                 ));
         return buffer.block(0, jstart - js - 1, iend - istart, jend - jstart + 1);
     }
     inline Block<ArrayXXf> mainq(){
-        buffer = half.x(half.y(domain[0]->block(
+        buffer = half.x(half.y(patch->block(
                 is, js, 
                 ie - is, je - js
                 )));
@@ -58,10 +66,10 @@ public:
 class StagGridx : public Grid{
 public:
     StagGridx() : Grid(){}
-    StagGridx(ArrayXXf **_domain, int _istart, int _iend, int _jstart, int _jend):
-        Grid(_domain, _istart, _iend, _jstart, _jend){}
+    StagGridx(ProgVariable &var, int _istart, int _iend, int _jstart, int _jend):
+        Grid(var, _istart, _iend, _jstart, _jend){}
     inline Block<ArrayXXf> mainq(){
-        buffer = half.x(half.y(domain[0]->block(
+        buffer = half.x(half.y(patch->block(
                 is, js, 
                 ie - is, je - js
                 )));
@@ -72,10 +80,10 @@ public:
 class StagGridy : public Grid{
 public:
     StagGridy() : Grid(){}
-    StagGridy(ArrayXXf **_domain, int _istart, int _iend, int _jstart, int _jend):
-        Grid(_domain, _istart, _iend, _jstart, _jend){}
+    StagGridy(ProgVariable &var, int _istart, int _iend, int _jstart, int _jend):
+        Grid(var, _istart, _iend, _jstart, _jend){}
     inline Block<ArrayXXf> mainq(){
-        buffer = half.x(half.y(domain[0]->block(
+        buffer = half.x(half.y(patch->block(
                 is, js, 
                 ie - is, je - js
                 )));
