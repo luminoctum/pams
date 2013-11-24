@@ -8,25 +8,24 @@ protected:
     FiniteInterpolation<2> half;
 public:
     inline void advection(
-            float dtdx,
             StagGridx &uwind, 
             StagGridy &vwind, 
             Grid &result){
-        result.main_t() += dtdx * (
-            diff.x(uwind.main() * result.mainx()) + diff.y(vwind.main() * result.mainy())
+        result.main_t() += (
+            diff.x(uwind.main() * result.mainx(), 1) 
+            + diff.y(vwind.main() * result.mainy(), 1)
             );
     }
     inline void self_advection(
-            float dtdx,
             StagGridx &uwind, 
             StagGridy &vwind){
-        uwind.main_t() += dtdx * (
-                diff.x(uwind.mainx() * uwind.mainx()) 
-                + diff.y(uwind.mainy() * vwind.mainx())
+        uwind.main_t() += (
+                diff.x(uwind.mainx() * uwind.mainx(), 1) 
+                + diff.y(uwind.mainy() * vwind.mainx(), 1)
                 );
-        vwind.main_t() += dtdx * (
-                diff.y(vwind.mainy() * vwind.mainy()) 
-                + diff.x(uwind.mainy() * vwind.mainx())
+        vwind.main_t() += (
+                diff.y(vwind.mainy() * vwind.mainy(), 1) 
+                + diff.x(uwind.mainy() * vwind.mainx(), 1)
                 );
     }
     /*

@@ -19,12 +19,12 @@ void test_finite_difference(){
         7,2,1,4,2,
         2,5,1,4,6;
     cout << a << endl;
-    cout << diff.x(a) << endl;
-    cout << diff.y(a) << endl;
+    cout << diff.x(a, 2) << endl;
+    cout << diff.y(a, 2) << endl;
     cout << half.x(a) << endl;
     cout << half.y(a) << endl;
-    cout << hypr.x(a) << endl;
-    cout << hypr.y(a) << endl;
+    cout << hypr.x(a, 2) << endl;
+    cout << hypr.y(a, 2) << endl;
 }
 
 void test_nonstaggered_grid(){
@@ -86,8 +86,8 @@ void test_dynamics(){
     cout << pv.main() << endl << endl;
 
     cout << "==================== original domain ==================== " <<  endl;
-    dyn.advection(1, pu, pv, pa);
-    dyn.self_advection(1, pu, pv);
+    dyn.advection(pu, pv, pa);
+    dyn.self_advection(pu, pv);
     cout << "sum = " << pa.main_t().sum() << endl << endl;
     cout << pa.main() + pa.main_t()<< endl << endl;
     cout << pu.main() + pu.main_t()<< endl << endl;
@@ -101,10 +101,10 @@ void test_dynamics(){
     StagGridy p1v(v, 1, 5, 1, 10);
     StagGridx p2u(u, 5, 10, 1, 9);
     StagGridy p2v(v, 5, 9, 1, 10);
-    dyn.advection(1, p1u, p1v, p1a);
-    dyn.advection(1, p2u, p2v, p2a);
-    dyn.self_advection(1, p1u, p1v);
-    dyn.self_advection(1, p2u, p2v);
+    dyn.advection(p1u, p1v, p1a);
+    dyn.advection(p2u, p2v, p2a);
+    dyn.self_advection(p1u, p1v);
+    dyn.self_advection(p2u, p2v);
     cout << p1a.main() + p1a.main_t() << endl;
     cout << p2a.main() + p2a.main_t() << endl << endl;
     cout << p1u.main() + p1u.main_t() << endl;
@@ -118,8 +118,8 @@ void test_dynamics(){
 
 int main(){
     //internal::set_is_malloc_allowed(false);
-    //test_finite_difference();
+    test_finite_difference();
     //test_nonstaggered_grid();
     //test_staggered_grid();
-    test_dynamics();
+    //test_dynamics();
 }

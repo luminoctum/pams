@@ -19,7 +19,7 @@ struct ProgVariable{
         value.setRandom();
         tendency.setZero();
     };
-    inline void update(float dt = 1.){
+    inline void update(float dt){
         value = value + tendency * dt;
         tendency.setZero();
     }

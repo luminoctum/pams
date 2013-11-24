@@ -1,6 +1,7 @@
 #ifndef NUMERICAL_METHOD
 #define NUMERICAL_METHOD
 #include <Eigen/Dense>
+#include <cmath>
 #include "Include.hh"
 
 using namespace Eigen;
@@ -9,36 +10,36 @@ template <int order>
 class FiniteDifference{
     public:
         template<typename Derived>
-        ArrayXXf x(const ArrayBase<Derived> &var){
+        ArrayXXf x(const ArrayBase<Derived> &var, float dx){
             ArrayXXf result;
             int nrows = var.rows(), ncols = var.cols();
             if (order == 2){
                 result.resize(nrows, ncols);
-                result.row(0) = var.row(1) - var.row(0);
+                result.row(0) = (var.row(1) - var.row(0)) / dx;
                 for (size_t i = 1; i < nrows - 1; i++)
-                    result.row(i) = 0.5 * (var.row(i + 1) - var.row(i - 1));
-                result.row(nrows - 1) = var.row(nrows - 1) - var.row(nrows - 2);
+                    result.row(i) = (var.row(i + 1) - var.row(i - 1)) / (2. * dx);
+                result.row(nrows - 1) = (var.row(nrows - 1) - var.row(nrows - 2)) / dx;
             } else if (order == 1){
                 result.resize(nrows - 1, ncols);
                 for (size_t i = 0; i < nrows - 1; i++)
-                    result.row(i) = var.row(i + 1) - var.row(i);
+                    result.row(i) = (var.row(i + 1) - var.row(i)) / dx;
             }
             return result;
         }
         template<typename Derived>
-        ArrayXXf y(const ArrayBase<Derived> &var){
+        ArrayXXf y(const ArrayBase<Derived> &var, float dy){
             ArrayXXf result;
             int nrows = var.rows(), ncols = var.cols();
             if (order == 2){
                 result.resize(nrows, ncols);
-                result.col(0) = var.col(1) - var.col(0);
+                result.col(0) = (var.col(1) - var.col(0)) / dy;
                 for (size_t i = 1; i < ncols - 1; i++)
-                    result.col(i) = 0.5 * (var.col(i + 1) - var.col(i - 1));
-                result.col(ncols - 1) = var.col(ncols - 1) - var.col(ncols - 2);
+                    result.col(i) = (var.col(i + 1) - var.col(i - 1)) / (2. * dy);
+                result.col(ncols - 1) = (var.col(ncols - 1) - var.col(ncols - 2)) / dy;
             } else if (order == 1){
                 result.resize(nrows, ncols - 1);
                 for (size_t i = 0; i < ncols - 1; i++)
-                    result.col(i) = var.col(i + 1) - var.col(i);
+                    result.col(i) = (var.col(i + 1) - var.col(i)) / dy;
             }
             return result;
         }
@@ -51,24 +52,24 @@ protected:
     static const float coeff[4][7];
 public:
     template<typename Derived>
-    ArrayXXf x(const ArrayBase<Derived> &var){
+    ArrayXXf x(const ArrayBase<Derived> &var, float dx){
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols);
         for (size_t i = 0; i < nrows; i++){
             r = MIN3(i, nrows - i - 1, order / 2);
             for (int j = -r; j < r + 1; j++)
-                result.row(i) += coeff[r][j + 3] * var.row(i + j);
+                result.row(i) += coeff[r][j + 3] * var.row(i + j) * std::pow(dx, -order);
         }
         return result;
     }
     template<typename Derived>
-    ArrayXXf y(const ArrayBase<Derived> &var){
+    ArrayXXf y(const ArrayBase<Derived> &var, float dy){
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols);
         for (size_t i = 0; i < ncols; i++){
             r = MIN3(i, ncols - i - 1, order / 2);
             for (int j = -r; j < r + 1; j++)
-                result.col(i) += coeff[r][j + 3] * var.col(i + j);
+                result.col(i) += coeff[r][j + 3] * var.col(i + j) * std::pow(dy, -order);
         }
         return result;
     }
