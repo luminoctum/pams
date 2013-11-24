@@ -12,7 +12,7 @@ public:
             StagGridx &uwind, 
             StagGridy &vwind, 
             Grid &result){
-        result.main_t() = dtdx * (
+        result.main_t() += dtdx * (
             diff.x(uwind.main() * result.mainx()) + diff.y(vwind.main() * result.mainy())
             );
     }
@@ -20,11 +20,11 @@ public:
             float dtdx,
             StagGridx &uwind, 
             StagGridy &vwind){
-        uwind.main_t() = dtdx * (
+        uwind.main_t() += dtdx * (
                 diff.x(uwind.mainx() * uwind.mainx()) 
                 + diff.y(uwind.mainy() * vwind.mainx())
                 );
-        vwind.main_t() = dtdx * (
+        vwind.main_t() += dtdx * (
                 diff.y(vwind.mainy() * vwind.mainy()) 
                 + diff.x(uwind.mainy() * vwind.mainx())
                 );

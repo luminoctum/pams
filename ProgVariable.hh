@@ -19,8 +19,8 @@ struct ProgVariable{
         value.setRandom();
         tendency.setZero();
     };
-    inline void update(){
-        value = value + tendency;
+    inline void update(float dt = 1.){
+        value = value + tendency * dt;
         tendency.setZero();
     }
 };

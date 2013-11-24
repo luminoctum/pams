@@ -111,6 +111,9 @@ void test_dynamics(){
     cout << p2u.main() + p2u.main_t() << endl << endl;
     cout << p1v.main() + p1v.main_t()<< endl;
     cout << p2v.main() + p2v.main_t()<< endl << endl;
+
+    cout << a.tendency << endl;
+    cout << u.tendency << endl;
 }
 
 int main(){
