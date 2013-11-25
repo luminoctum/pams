@@ -10,7 +10,7 @@ template <int order>
 class FiniteDifference{
     public:
         template<typename Derived>
-        ArrayXXf x(const ArrayBase<Derived> &var, float dx){
+        ArrayXXf x(const ArrayBase<Derived> &var, float dx) const{
             ArrayXXf result;
             int nrows = var.rows(), ncols = var.cols();
             if (order == 2){
@@ -27,7 +27,7 @@ class FiniteDifference{
             return result;
         }
         template<typename Derived>
-        ArrayXXf y(const ArrayBase<Derived> &var, float dy){
+        ArrayXXf y(const ArrayBase<Derived> &var, float dy) const{
             ArrayXXf result;
             int nrows = var.rows(), ncols = var.cols();
             if (order == 2){
@@ -52,7 +52,7 @@ protected:
     static const float coeff[4][7];
 public:
     template<typename Derived>
-    ArrayXXf x(const ArrayBase<Derived> &var, float dx){
+    ArrayXXf x(const ArrayBase<Derived> &var, float dx) const{
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols);
         for (size_t i = 0; i < nrows; i++){
@@ -63,7 +63,7 @@ public:
         return result;
     }
     template<typename Derived>
-    ArrayXXf y(const ArrayBase<Derived> &var, float dy){
+    ArrayXXf y(const ArrayBase<Derived> &var, float dy) const{
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols);
         for (size_t i = 0; i < ncols; i++){
@@ -91,7 +91,7 @@ protected:
     static const float coeff[6][6];
 public:
     template<typename Derived>
-    ArrayXXf x(const ArrayBase<Derived> &var){
+    ArrayXXf x(const ArrayBase<Derived> &var) const{
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows - 1, ncols);
         for (size_t i = 0; i < nrows - 1; i++){
@@ -102,7 +102,7 @@ public:
         return result;
     }
     template<typename Derived>
-    ArrayXXf y(const ArrayBase<Derived> &var){
+    ArrayXXf y(const ArrayBase<Derived> &var) const{
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols - 1);
         for (size_t i = 0; i < ncols - 1; i++){
@@ -113,7 +113,7 @@ public:
         return result;
     }
     template<typename Deriveda, typename Derivedb>
-    ArrayXXf x1(const ArrayBase<Deriveda> &wind, const ArrayBase<Derivedb> &var){
+    ArrayXXf x1(const ArrayBase<Deriveda> &wind, const ArrayBase<Derivedb> &var) const{
         // upwind transport
         int r, nrows = nrows, ncols = ncols;
         ArrayXXf result = ArrayXXf::Zero(nrows - 1, ncols);
@@ -129,7 +129,7 @@ public:
         return result;
     }
     template<typename Deriveda, typename Derivedb>
-    ArrayXXf y1(const ArrayBase<Deriveda> &wind, const ArrayBase<Derivedb> &var){
+    ArrayXXf y1(const ArrayBase<Deriveda> &wind, const ArrayBase<Derivedb> &var) const{
         int r, nrows = nrows, ncols = ncols;
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols - 1);
         wsigny = (wind.block(0,1,nrows,ncols - 1) > 0).select(

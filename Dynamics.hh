@@ -2,48 +2,53 @@
 #define DYNAMICS
 #include "Grid.hh"
 
-template<int order = 2>
+template<int order>
 class Dynamics{
 typedef StagGridx<order/2> HalfGridx;
-typedef StagGridx<order/2> HalfGridy;
-typedef Grid<order/2> IntGrid;
+typedef StagGridy<order/2> HalfGridy;
+typedef Grid<order/2> MainGrid;
 protected:
     FiniteDifference<1> diff;
+    float dx, dy, f;
 public:
+    Dynamics(){
+        dx  =   1.;
+        dy  =   1.;
+        f   =   2.;
+    }
     inline void advection(
-            StagGridx<1> &uwind, 
-            StagGridy<1> &vwind, 
-            Grid<1> &result){
+            const HalfGridx &uwind, 
+            const HalfGridy &vwind, 
+            MainGrid &result) const{
         result.main_t() += (
-            diff.x(uwind.main() * result.mainx(), 1) 
-            + diff.y(vwind.main() * result.mainy(), 1)
+            diff.x(uwind.main() * result.mainx(), dx) 
+            + diff.y(vwind.main() * result.mainy(), dy)
             );
     }
     inline void self_advection(
-            StagGridx<1> &uwind, 
-            StagGridy<1> &vwind){
+            HalfGridx &uwind, 
+            HalfGridy &vwind) const{
         uwind.main_t() += (
-                diff.x(uwind.mainx() * uwind.mainx(), 1) 
-                + diff.y(uwind.mainy() * vwind.mainx(), 1)
+                diff.x(uwind.mainx() * uwind.mainx(), dx) 
+                + diff.y(uwind.mainy() * vwind.mainx(), dy)
                 );
         vwind.main_t() += (
-                diff.y(vwind.mainy() * vwind.mainy(), 1) 
-                + diff.x(uwind.mainy() * vwind.mainx(), 1)
+                diff.y(vwind.mainy() * vwind.mainy(), dy) 
+                + diff.x(uwind.mainy() * vwind.mainx(), dx)
                 );
     }
     inline void coriolis(
-            float f,
-            StagGridx<1> &uwind,
-            StagGridy<1> &vwind){
+            HalfGridx &uwind,
+            HalfGridy &vwind) const{
         uwind.main_t() += f * vwind.mainq();
         vwind.main_t() += - f * uwind.mainq();
     }
     inline void gradient(
-            Grid<1> &phi,
-            StagGridx<1> &vx,
-            StagGridy<1> &vy){
-        vx.main_t() += diff(phi.mainx(), 1);
-        vy.main_t() += diff(phi.mainy(), 1);
+            const MainGrid &phi,
+            HalfGridx &vx,
+            HalfGridy &vy) const{
+        vx.main_t() += diff.x(phi.extendx(), dx);
+        vy.main_t() += diff.y(phi.extendy(), dy);
     }
 };
 

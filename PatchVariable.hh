@@ -1,11 +1,13 @@
 #ifndef PROGVARIABLE
 #define PROGVARIABLE
 
-template <template <int>class gridtype, int halo = 1, int ntile_x = 1, int ntile_y = 1>
+#include "Grid.hh"
+
+template <template <int>class GridType, int halo = 1, int ntile_x = 1, int ntile_y = 1>
 struct PatchVariable{
     ArrayXXf value;
     ArrayXXf value_t;
-    gridtype<halo> tile[ntile_x][ntile_y];
+    GridType<halo> tile[ntile_x][ntile_y];
     int patch_rows, patch_cols;
     int tile_rows, tile_cols;
     int offset_x, offset_y;
@@ -15,8 +17,8 @@ struct PatchVariable{
         int tx, ty;
         value.setRandom(_nrows, _ncols);
         value_t.setZero(_nrows, _ncols);
-        offset_x = tile[0][0].offset_x;
-        offset_y = tile[0][0].offset_y;
+        offset_x = tile[0][0].get_offset_x();
+        offset_y = tile[0][0].get_offset_y();
         tx = _nrows - 2 * halo + offset_x * (ntile_x - 1);
         ty = _ncols - 2 * halo + offset_y * (ntile_y - 1);
         if ((tx % ntile_x) || (ty % ntile_y)){ASSERT_NOT_SUPPORTED;}
@@ -31,6 +33,9 @@ struct PatchVariable{
                         );
         patch_rows = _nrows;
         patch_cols = _ncols;
+    }
+    inline GridType<halo>& operator()(int index){
+        return tile[index / ntile_y][index % ntile_y];
     }
     void update(float dt){
         if (offset_x == 1){
@@ -48,12 +53,16 @@ struct PatchVariable{
         value_t.setZero();
     }
     inline void setLeftRightZero(){
-        value.row(halo).setZero();
-        value.row(patch_rows -1 - halo).setZero();
+        for (int i = 0; i <= halo; i++){
+            value.row(i).setZero();
+            value.row(patch_rows -1 - i).setZero();
+        }
     }
     inline void setBottomTopZero(){
-        value.col(halo).setZero();
-        value.col(patch_cols -1 - halo).setZero();
+        for (int i = 0; i <= halo; i++){
+            value.col(i).setZero();
+            value.col(patch_cols -1 - i).setZero();
+        }
     }
 };
 

@@ -2,8 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "Grid.hh"
+#include "PatchVariable.hh"
 #include "Dynamics.hh"
+#include "ForwardStateVector.hh"
 //#include "Advection.hh"
 
 using namespace std;
@@ -34,10 +35,12 @@ void test_nonstaggered_grid(){
     cout << b.tile[0][1].main() << endl << endl;
     cout << b.tile[1][0].main() << endl << endl;
     cout << b.tile[1][1].main() << endl << endl;
+    cout << b.tile[0][0].mainx() << endl << endl;
+    cout << b.tile[0][0].mainy() << endl << endl;
 }
 
 void test_staggered_grid(){
-    PatchVariable<StagGridy,1,2,2> a(6, 7);
+    PatchVariable<StagGridx,1,2,2> a(7, 6);
     cout << a.value << endl << endl;
     cout << a.value_t << endl << endl;
     cout << a.tile[0][0].main() << endl << endl;
@@ -52,10 +55,10 @@ void test_staggered_grid(){
 }
 
 void test_dynamics(){
-    PatchVariable<Grid,1,3,3> a(11, 11);
-    PatchVariable<StagGridx,1,3,3> u(12, 11);
-    PatchVariable<StagGridy,1,3,3> v(11, 12);
-    Dynamics<2> dyn;
+    PatchVariable<Grid, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> a(6, 6);
+    PatchVariable<StagGridx, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> u(7, 6);
+    PatchVariable<StagGridy, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> v(6, 7);
+    Dynamics<O_INTERP> dyn;
     u.setLeftRightZero();
     v.setBottomTopZero();
     /*
@@ -90,9 +93,18 @@ void test_dynamics(){
     cout << "==================== domain decomposition ==================== " <<  endl;
     
     //a.clean_t(); u.clean_t(); v.clean_t();
-    for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++){
+    /*
+    for (int i = 0; i < NTILES_IN_X; i++) for (int j = 0; j < NTILES_IN_Y; j++){
         dyn.advection(u.tile[i][j], v.tile[i][j], a.tile[i][j]);
         dyn.self_advection(u.tile[i][j], v.tile[i][j]);
+        dyn.coriolis(u.tile[i][j], v.tile[i][j]);
+        dyn.gradient(a.tile[i][j], u.tile[i][j], v.tile[i][j]);
+    }*/
+    for (int i = 0; i < NTILES_IN_X * NTILES_IN_Y; i++){
+        dyn.advection(u(i), v(i), a(i));
+        dyn.self_advection(u(i), v(i));
+        dyn.coriolis(u(i), v(i));
+        dyn.gradient(a(i), u(i), v(i));
     }
     a.update(1.); u.update(1.); v.update(1.);
     cout << a.value << endl << endl;
@@ -106,5 +118,23 @@ int main(){
     //test_finite_difference();
     //test_nonstaggered_grid();
     //test_staggered_grid();
-    test_dynamics();
+    //test_dynamics();
+    MainPatch a(6, 6);
+    StagPatchx u(7, 6);
+    StagPatchy v(6, 7);
+    u.setLeftRightZero();
+    v.setBottomTopZero();
+    ForwardStateVector<ShallowWater> forward;
+    for (int i = 0; i < 5; i++){
+        cout << u.value << endl << endl;
+        cout << v.value << endl << endl;
+        cout << a.value << endl << endl;
+        cout << "Total Sum: " << a.value.sum() << endl;
+        forward(u, v, a);
+        cout << "Forward step #" << i << " :"<< endl;
+        cout << u.value << endl << endl;
+        cout << v.value << endl << endl;
+        cout << a.value << endl << endl;
+        cout << "Total Sum: " << a.value.sum() << endl;
+    }
 }

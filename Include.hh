@@ -34,7 +34,11 @@
 #define MIN2(a, b) ( a < b ? a : b )
 #define MAX2(a, b) ( a > b ? a : b )
 
-/* define order of numerical method */
-#define OINTERP 2
+/* define domain decomposition */
+#define NTILES_IN_X 1
+#define NTILES_IN_Y 1
+
+/* define interpolation order */
+#define O_INTERP    2
 
 #endif

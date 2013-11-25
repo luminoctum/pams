@@ -1,18 +1,15 @@
 #ifndef GRID
 #define GRID
 #include "NumericalMethod.hh"
-#include "PatchVariable.hh"
 
 template <int halo = 1>
 class Grid{
 protected:
     FiniteInterpolation<2 * halo> half;
     ArrayXXf *patch, *patch_t;
-    ArrayXXf buffer;
     std::string name;
     int istart, jstart, iend, jend; // start and end index, end is not included
     int is, ie, js, je;
-public:
     int offset_x, offset_y;
 
 public:
@@ -45,32 +42,59 @@ public:
                 iend - istart, jend - jstart
                 );
     }
+    inline Block<ArrayXXf> main() const{
+        return patch->block(
+                istart, jstart,
+                iend - istart, jend - jstart
+                );
+    }
+    inline Block<ArrayXXf> extendx() const{
+        return patch->block(
+                istart - 1, jstart,
+                iend - istart + 2, jend - jstart
+                );
+    }
+    inline Block<ArrayXXf> extendy() const{
+        return patch->block(
+                istart, jstart - 1,
+                iend - istart, jend - jstart + 2
+                );
+    }
     inline Block<ArrayXXf> main_t(){
         return patch_t->block(
                 istart, jstart,
                 iend - istart, jend - jstart
                 );
     }
-    inline Block<ArrayXXf> mainx(){
+    inline ArrayXXf mainx() const{
+        ArrayXXf buffer;
         buffer = half.x(patch->block(
                 is, jstart, 
                 ie - is, jend - jstart
-                ));
-        return buffer.block(istart - is - 1, 0, iend - istart + 1, jend - jstart);
+                )).block(istart - is - 1, 0, iend - istart + 1, jend - jstart);
+        return buffer;
     }
-    inline Block<ArrayXXf> mainy(){
+    inline ArrayXXf mainy() const{
+        ArrayXXf buffer;
         buffer = half.y(patch->block(
                 istart, js, 
                 iend - istart, je - js
-                ));
-        return buffer.block(0, jstart - js - 1, iend - istart, jend - jstart + 1);
+                )).block(0, jstart - js - 1, iend - istart, jend - jstart + 1);
+        return buffer;
     }
-    inline Block<ArrayXXf> mainq(){
+    inline ArrayXXf mainq() const{
+        ArrayXXf buffer;
         buffer = half.x(half.y(patch->block(
                 is, js, 
                 ie - is, je - js
-                )));
-        return buffer.block(istart - is - 1, jstart - js - 1, iend - istart + 1, jend - jstart + 1);
+                ))).block(istart - is - 1, jstart - js - 1, iend - istart + 1, jend - jstart + 1);
+        return buffer;
+    }
+    inline int get_offset_x() const{
+        return offset_x;
+    };
+    inline int get_offset_y() const{
+        return offset_y;
     }
 };
 
@@ -86,15 +110,16 @@ public:
             this->offset_x    = 1;
             this->offset_y    = 0;
     }
-    inline Block<ArrayXXf> mainq(){
-        this->buffer = this->half.x(this->half.y(this->patch->block(
+    inline ArrayXXf mainq() const{
+        ArrayXXf buffer;
+        buffer = this->half.x(this->half.y(this->patch->block(
                 this->is, this->js, 
                 this->ie - this->is, this->je - this->js
-                )));
-        return this->buffer.block(
+                ))).block(
                 this->istart - this->is, this->jstart - this->js - 1, 
                 this->iend - this->istart - 1, this->jend - this->jstart + 1
                 );
+        return buffer;
     }
 };
 
@@ -110,15 +135,16 @@ public:
         this->offset_x    = 0;
         this->offset_y    = 1;
     }
-    inline Block<ArrayXXf> mainq(){
-        this->buffer = this->half.x(this->half.y(this->patch->block(
+    inline ArrayXXf mainq() const{
+        ArrayXXf buffer;
+        buffer = this->half.x(this->half.y(this->patch->block(
                 this->is, this->js, 
                 this->ie - this->is, this->je - this->js
-                )));
-        return this->buffer.block(
+                ))).block(
                 this->istart - this->is - 1, this->jstart - this->js, 
                 this->iend - this->istart + 1, this->jend - this->jstart - 1
                 );
+        return buffer;
     }
 };
 
