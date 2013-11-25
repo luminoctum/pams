@@ -4,17 +4,16 @@
 template<int order>
 class RungeKutta{
     // var is patch
-    q1 = var;
-    q2 = var;
-    q3 = var;
-    q4 = var;
-    int op1 = {0.5, 0.5, 1.}
-    int op2 = {1., 2., 2., 1.}
+    float op1 = {0.5, 0.5, 1.}
+    float op2 = {1./6., 1./3., 1./3., 1./3.}
     for (int i = 0; i < order; i++){
-        forward(q[i], q[i + 1]);
+        forward(q[i]);
+        q[i + 1] = q[i];
         q[i + 1].update(op[i] * dt);
     }
-    var.tendency = 1./6.*(q1.tendency + 2. * q2.tendency + 2. * q3.tendency + q4.tendency);
+    for (int i = 0; i < order; i++){
+        var.value_t += op2[i] * q[i].value_t;
+    }
     var.update(dt);
 };
 

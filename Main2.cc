@@ -27,7 +27,7 @@ void test_finite_difference(){
 }
 
 void test_nonstaggered_grid(){
-    ProgVariable b;
+    PatchVariable b;
     b.value.setRandom(10, 10);
     b.tendency.setZero(10, 10);
     cout << b.value << endl << endl;
