@@ -8,7 +8,7 @@ CFLAG = -O3 -msse2 -std=c++0x -fopenmp
 MAIN = Main
 EXE = run
 ADDONS = Include.hh NumericalMethod.hh GridVariable.hh PatchVariable.hh \
-		 Dynamics.hh ShallowWater.hh ForwardStateVector.hh
+		 Dynamics.hh ShallowWater.hh TimeStepping.hh
 
 $(EXE): $(MAIN).o 
 	$(CC) $(CFLAG) $(CLIB) -o $(EXE) $(<)

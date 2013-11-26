@@ -3,9 +3,11 @@
 #include "GridVariable.hh"
 #include <vector>
 
-template <int order, class patch>
+template <int order, int ntile_x, int ntile_y>
 class ShallowWater{
 typedef GridVariable<order/2> Grid;
+typedef PatchVariable<GridVariable, order/2, ntile_x, ntile_y> Patch;
+typedef std::vector<Patch> StateVector;
 protected:
     FiniteDifference<1> diff;
     float dx, dy, f;
@@ -48,7 +50,7 @@ public:
         vx.main_t() += diff.x(0.5 * phi.extendx() * phi.extendx(), dx);
         vy.main_t() += diff.y(0.5 * phi.extendy() * phi.extendy(), dy);
     }
-    void forward(std::vector<patch> &state){
+    void operator()(StateVector &state){
         // 0 : phi
         // 1 : uwind
         // 2 : vwind

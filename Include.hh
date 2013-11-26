@@ -35,8 +35,8 @@
 #define MAX2(a, b) ( a > b ? a : b )
 
 /* define domain decomposition */
-#define NTILES_IN_X 2
-#define NTILES_IN_Y 2
+#define NTILES_IN_X 1
+#define NTILES_IN_Y 1
 
 /* define interpolation order */
 #define O_INTERP    2

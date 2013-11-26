@@ -5,7 +5,7 @@
 #include "PatchVariable.hh"
 #include "Dynamics.hh"
 #include "ShallowWater.hh"
-//#include "ForwardStateVector.hh"
+#include "TimeStepping.hh"
 //#include "Advection.hh"
 
 using namespace std;
@@ -109,13 +109,17 @@ int main(){
         cout << state[i].value << endl << endl;
     }
     cout << state[0].value.sum() << endl << endl;
-    ShallowWater<O_INTERP, Patch> sys;
-    sys.forward(state);
+    ShallowWater<O_INTERP, NTILES_IN_X, NTILES_IN_Y> forward;
+    forward(state);
     for (int i = 0; i < state.size(); i++){
         state[i].update(1.0);
         cout << state[i].value << endl << endl;
     }
     cout << state[0].value.sum() << endl << endl;
+    Runge_Kutta<4, 
+        ShallowWater<O_INTERP, NTILES_IN_X, NTILES_IN_Y>,
+        StateVector> stepper;
+    stepper(state, 0, 1, 0.5);
 
     /*
     TimeStepper<4, StateVector, ShallowWater> stepper;
