@@ -1,13 +1,12 @@
 #ifndef PATCH_VARIABLE
 #define PATCH_VARIABLE
+#include "TileVariable.hh"
 
-#include "GridVariable.hh"
-
-template <template <int>class GridType, int halo, int ntile_x, int ntile_y>
+template <template <int>class TileType, int halo, int ntile_x, int ntile_y>
 struct PatchVariable{
     ArrayXXf value;
     ArrayXXf value_t;
-    GridType<halo> tile[ntile_x][ntile_y];
+    TileType<halo> tile[ntile_x][ntile_y];
     int patch_rows, patch_cols;
     int tile_rows, tile_cols;
     int offset_x, offset_y;
@@ -59,7 +58,7 @@ struct PatchVariable{
                         tile_rows, tile_cols, stag
                         );
     }
-    inline GridType<halo>& operator()(int index){
+    inline TileType<halo>& operator()(int index){
         return tile[index / ntile_y][index % ntile_y];
     }
     void update(float dt){

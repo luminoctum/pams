@@ -1,12 +1,12 @@
 #ifndef SHALLOWWATER
 #define SHALLOWWATER
-#include "GridVariable.hh"
+#include "PatchVariable.hh"
 #include <vector>
 
 template <int order, int ntile_x, int ntile_y>
 class ShallowWater{
-typedef GridVariable<order/2> Grid;
-typedef PatchVariable<GridVariable, order/2, ntile_x, ntile_y> Patch;
+typedef TileVariable<order/2> Tile;
+typedef PatchVariable<TileVariable, order/2, ntile_x, ntile_y> Patch;
 typedef std::vector<Patch> StateVector;
 protected:
     FiniteDifference<1> diff;
@@ -18,15 +18,15 @@ public:
         f = 1.0;
     }
     inline void advection(
-            const Grid &uflux, 
-            const Grid &vflux, 
-            Grid &result) const{
+            const Tile &uflux, 
+            const Tile &vflux, 
+            Tile &result) const{
         result.main_t() += diff.x(uflux.main(), dx) + diff.y(vflux.main(), dy);
     }
     inline void self_advection(
-            const Grid &phi,
-            Grid &uflux, 
-            Grid &vflux) const{
+            const Tile &phi,
+            Tile &uflux, 
+            Tile &vflux) const{
         uflux.main_t() += (
                 diff.x(uflux.mainx() * uflux.mainx() / phi.extendx(), dx) 
                 + diff.y(uflux.mainy() * vflux.mainx() / phi.mainq(), dy)
@@ -38,15 +38,15 @@ public:
     }
     inline void coriolis(
             float f,
-            Grid &uflux,
-            Grid &vflux) const{
+            Tile &uflux,
+            Tile &vflux) const{
         uflux.main_t() += f * vflux.v_to_u();
         vflux.main_t() += - f * uflux.u_to_v();
     }
     inline void gradient(
-            const Grid &phi,
-            Grid &vx,
-            Grid &vy) const{
+            const Tile &phi,
+            Tile &vx,
+            Tile &vy) const{
         vx.main_t() += diff.x(0.5 * phi.extendx() * phi.extendx(), dx);
         vy.main_t() += diff.y(0.5 * phi.extendy() * phi.extendy(), dy);
     }

@@ -30,7 +30,7 @@ void test_finite_difference(){
 }
 
 void test_nonstaggered_grid(){
-    PatchVariable<GridVariable,1,2,2> b(6, 6, 'i');
+    PatchVariable<TileVariable,1,2,2> b(6, 6, 'i');
     cout << b.value << endl << endl;
     cout << b.tile[0][0].main() << endl << endl;
     cout << b.tile[0][1].main() << endl << endl;
@@ -41,7 +41,7 @@ void test_nonstaggered_grid(){
 }
 
 void test_staggered_grid(){
-    PatchVariable<GridVariable,1,2,2> a(7, 6, 'x');
+    PatchVariable<TileVariable,1,2,2> a(7, 6, 'x');
     cout << a.value << endl << endl;
     cout << a.value_t << endl << endl;
     cout << a.tile[0][0].main() << endl << endl;
@@ -56,9 +56,9 @@ void test_staggered_grid(){
 }
 
 void test_dynamics(){
-    PatchVariable<GridVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> a(6, 6, 'i');
-    PatchVariable<GridVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> u(7, 6, 'x');
-    PatchVariable<GridVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> v(6, 7, 'y');
+    PatchVariable<TileVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> a(6, 6, 'i');
+    PatchVariable<TileVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> u(7, 6, 'x');
+    PatchVariable<TileVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> v(6, 7, 'y');
     Dynamics<O_INTERP> dyn;
     u.setLeftRightZero();
     v.setBottomTopZero();
@@ -93,7 +93,7 @@ int main(){
     //test_staggered_grid();
     //test_dynamics();
     //
-    typedef PatchVariable<GridVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> Patch;
+    typedef PatchVariable<TileVariable, O_INTERP/2, NTILES_IN_X, NTILES_IN_Y> Patch;
     typedef std::vector<Patch> StateVector;
     Patch a(6, 6, 'i');
     Patch u(7, 6, 'x');
