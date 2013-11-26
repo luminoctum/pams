@@ -124,7 +124,9 @@ int main(){
     StagPatchy v(6, 7);
     u.setLeftRightZero();
     v.setBottomTopZero();
-    ForwardStateVector<ShallowWater> forward;
+
+    /*
+    TimeStepper<4, StateVector, ShallowWater> stepper;
     for (int i = 0; i < 5; i++){
         cout << u.value << endl << endl;
         cout << v.value << endl << endl;
@@ -136,5 +138,5 @@ int main(){
         cout << v.value << endl << endl;
         cout << a.value << endl << endl;
         cout << "Total Sum: " << a.value.sum() << endl;
-    }
+    }*/
 }

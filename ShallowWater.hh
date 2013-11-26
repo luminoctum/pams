@@ -1,8 +1,9 @@
 #ifndef SHALLOWWATER
 #define SHALLOWWATER
 #include "Grid.hh"
+#include <vector>
 
-template <int order>
+template <int order, class patch>
 class ShallowWater{
 typedef StagGridx<order/2> HalfGridx;
 typedef StagGridy<order/2> HalfGridy;
@@ -43,6 +44,18 @@ public:
             HalfGridy &vy) const{
         vx.main_t() += diff.x(0.5 * phi.extendx() * phi.extendx(), dx);
         vy.main_t() += diff.y(0.5 * phi.extendy() * phi.extendy(), dy);
+    }
+    void forward(std::vector<patch> &state){
+        // 0 : phi
+        // 1 : uwind
+        // 2 : vwind
+        #pragma omp parallel for
+        for (int i = 0; i < NTILES_IN_X * NTILES_IN_Y; i++){
+            advection(state[1](i), state[2](i), state[0](i));
+            self_advection(state[0](i), state[1](i), state[2](i));
+            gradient(state[0](i), state[1](i), state[2](i));
+            coriolis(f, state[1](i), state[2](i));
+        }
     }
 };
 
