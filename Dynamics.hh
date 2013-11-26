@@ -1,12 +1,10 @@
 #ifndef DYNAMICS
 #define DYNAMICS
-#include "Grid.hh"
+#include "GridVariable.hh"
 
 template<int order>
 class Dynamics{
-typedef StagGridx<order/2> HalfGridx;
-typedef StagGridy<order/2> HalfGridy;
-typedef Grid<order/2> MainGrid;
+typedef GridVariable<order/2> Grid;
 protected:
     FiniteDifference<1> diff;
     float dx, dy, f;
@@ -17,17 +15,17 @@ public:
         f   =   2.;
     }
     inline void advection(
-            const HalfGridx &uwind, 
-            const HalfGridy &vwind, 
-            MainGrid &result) const{
+            const Grid &uwind, 
+            const Grid &vwind, 
+            Grid &result) const{
         result.main_t() += (
             diff.x(uwind.main() * result.mainx(), dx) 
             + diff.y(vwind.main() * result.mainy(), dy)
             );
     }
     inline void self_advection(
-            HalfGridx &uwind, 
-            HalfGridy &vwind) const{
+            Grid &uwind, 
+            Grid &vwind) const{
         uwind.main_t() += (
                 diff.x(uwind.mainx() * uwind.mainx(), dx) 
                 + diff.y(uwind.mainy() * vwind.mainx(), dy)
@@ -38,15 +36,15 @@ public:
                 );
     }
     inline void coriolis(
-            HalfGridx &uwind,
-            HalfGridy &vwind) const{
-        uwind.main_t() += f * vwind.mainq();
-        vwind.main_t() += - f * uwind.mainq();
+            Grid &uwind,
+            Grid &vwind) const{
+        uwind.main_t() += f * vwind.v_to_u();
+        vwind.main_t() += - f * uwind.u_to_v();
     }
     inline void gradient(
-            const MainGrid &phi,
-            HalfGridx &vx,
-            HalfGridy &vy) const{
+            const Grid &phi,
+            Grid &vx,
+            Grid &vy) const{
         vx.main_t() += diff.x(phi.extendx(), dx);
         vy.main_t() += diff.y(phi.extendy(), dy);
     }

@@ -7,7 +7,7 @@ CINC = -I/usr/include -I. -I $(EIGEN_DIR) -I $(ODEINT_DIR) -I $(STLIB_DIR)
 CFLAG = -O3 -msse2 -std=c++0x -fopenmp
 MAIN = Main
 EXE = run
-ADDONS = Include.hh NumericalMethod.hh Grid.hh PatchVariable.hh \
+ADDONS = Include.hh NumericalMethod.hh GridVariable.hh PatchVariable.hh \
 		 Dynamics.hh ShallowWater.hh ForwardStateVector.hh
 
 $(EXE): $(MAIN).o 
