@@ -1,9 +1,3 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include "patch_variable.hh"
-#include "time_stepping.hh"
-#include "module_shallow_water.hh"
 #include "include.hh"
 using namespace std;
 
@@ -33,6 +27,4 @@ int main(){
         cout << state[i].value << endl << endl;
     }
     cout << state[0].value.sum() << endl << endl;
-
-
 }
