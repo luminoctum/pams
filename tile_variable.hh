@@ -7,19 +7,16 @@ class TileVariable{
 protected:
     FiniteInterpolation<2 * halo> half;
     ArrayXXf *patch, *patch_t;
-    std::string name;
     int istart, jstart, iend, jend; // start and end index, end is not included
     int is, ie, js, je;
-    char stag;
-
 public:
     TileVariable(){}
     TileVariable(ArrayXXf *_patch, ArrayXXf *_patch_t, 
-            int _istart, int _jstart, int _ilen, int _jlen, char _stag){
-        set(_patch, _patch_t, _istart, _jstart, _ilen, _jlen, _stag);
+            int _istart, int _jstart, int _ilen, int _jlen){
+        set(_patch, _patch_t, _istart, _jstart, _ilen, _jlen);
     }
     void set(ArrayXXf *_patch, ArrayXXf *_patch_t, 
-            int _istart, int _jstart, int _ilen, int _jlen, char _stag){
+            int _istart, int _jstart, int _ilen, int _jlen){
         patch       = _patch;
         patch_t     = _patch_t;
         istart      = _istart;
@@ -30,13 +27,6 @@ public:
         ie          = MIN2(iend + halo, patch->rows());
         js          = MAX2(jstart - halo, 0);
         je          = MIN2(jend + halo, patch->cols());
-        stag        = _stag;
-    }
-    inline Block<ArrayXXf> main(){
-        return patch->block(
-                istart, jstart,
-                iend - istart, jend - jstart
-                );
     }
     inline Block<ArrayXXf> main() const{
         return patch->block(
@@ -56,7 +46,7 @@ public:
                 iend - istart, jend - jstart + 2
                 );
     }
-    inline Block<ArrayXXf> main_t(){
+    inline Block<ArrayXXf> main_t() const{
         return patch_t->block(
                 istart, jstart,
                 iend - istart, jend - jstart

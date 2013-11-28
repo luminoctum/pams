@@ -15,13 +15,13 @@ public:
     float dx, dy;
     float start, end, step;
     int frame;
+    Eigen::ArrayXXf buffer;
 public:
     ModuleBase(std::string _fname = "dynamics.nc", long _current = 0){
         current = _current;
         filename = _fname;
         NcFile dataFile(_fname.c_str(), NcFile::ReadOnly);
         if (!dataFile.is_valid()){ ASSERT_FILE_NOT_FOUND(_fname); }
-        Eigen::ArrayXXf buffer;
         for (int i = 0; i < dataFile.num_vars(); i++){
             NcVar *data = dataFile.get_var(i);
             long *edges = data->edges();
@@ -53,12 +53,33 @@ public:
         dx      = xlen / (nrows - 1);
         dy      = ylen / (ncols - 1);
     }
+    friend std::ostream& operator<< (std::ostream &os, const ModuleBase &other){
+        os << "========== Experiment file name : " << other.filename << " ==========" << std::endl
+            << "Number of Grids in X: " << other.nrows << std::endl
+            << "Number of Grids in Y: " << other.ncols << std::endl
+            << "Total length in X: " << other.xlen / 1000. << " km" << std::endl
+            << "Total length in Y: " << other.ylen / 1000. << " km" << std::endl
+            << "Grid size in X: " << other.dx / 1000. << " km" << std::endl
+            << "Grid size in Y: " << other.dy / 1000. << " km" <<std::endl
+            << "Time start: " << other.start << " s" << std::endl
+            << "Time end: " << other.end << " s" << std::endl
+            << "Time step: " << other.step << " s" << std::endl
+            << "Times per frame: " << other.frame << std::endl;
+        return os;
+    }
     template <typename StateType>
     void ncwrite(const StateType &state, float time){
         current++;
         NcFile dataFile(filename.c_str(),NcFile::Write);
-        for (size_t i = 0; i < state.size(); i++)
-            dataFile.get_var(state[i].name.c_str())->put_rec(&state[i].value(0, 0), current);
+        for (size_t i = 0; i < state.size(); i++){
+            if (state[i].scale_by_mass){
+                buffer = state[i].main() / state[0].main_stag(state[i].stag);
+            } else{
+                buffer = state[i].main();
+            }
+            dataFile.get_var(state[i].name.c_str())->put_rec(&buffer(0, 0), current);
+            //dataFile.get_var(state[i].name.c_str())->put_rec(&state[i].value(0, 0), current);
+        }
         dataFile.get_var("time")->put_rec(&time, current);
     }
 };

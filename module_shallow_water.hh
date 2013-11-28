@@ -49,12 +49,23 @@ public:
     }
     inline void diffusion(
             Tile &phi,
-            Tile &uwind,
-            Tile &vwind){
+            Tile &uflux,
+            Tile &vflux) const{
         phi.main_t() += 1E-4 * (dissip.x(phi.main()) + dissip.y(phi.main()));
-        uwind.main_t() += 1E-4 * (dissip.x(uwind.main()) + dissip.y(uwind.main()));
-        vwind.main_t() += 1E-4 * (dissip.x(vwind.main()) + dissip.y(vwind.main()));
+        uflux.main_t() += 1E-4 * (dissip.x(uflux.main()) + dissip.y(uflux.main()));
+        vflux.main_t() += 1E-4 * (dissip.x(vflux.main()) + dissip.y(vflux.main()));
     }
+    inline void tracer(
+            const Tile &phi,
+            const Tile &uflux,
+            const Tile &vflux,
+            Tile &tracer) const {
+        tracer.main_t() -= (
+                diff.x(uflux.main() * tracer.mainx() / phi.mainx(), dx)
+                + diff.y(vflux.main() * tracer.mainy() / phi.mainy(), dy)
+                );
+    }
+
     inline void total_energy(
             const Tile &phi,
             const Tile &uwind,
@@ -71,12 +82,14 @@ public:
         // 0 : phi
         // 1 : uwind
         // 2 : vwind
+        // 3 : tracer
         #pragma omp parallel for
         for (int i = 0; i < ntile_x * ntile_y; i++){
             advection(state[1](i), state[2](i), state[0](i));
             self_advection(state[0](i), state[1](i), state[2](i));
             gradient(state[0](i), state[1](i), state[2](i));
             coriolis(f, state[1](i), state[2](i));
+            tracer(state[0](i), state[1](i), state[2](i), state[3](i));
             //diffusion(state[0](i), state[1](i), state[2](i));
         }
     }

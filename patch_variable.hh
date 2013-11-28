@@ -6,18 +6,20 @@ enum Boundary{DIRICHLET, NEUMANN, PERIODIC};
 
 template <template <int>class TileType, int halo, int ntile_x, int ntile_y>
 class PatchVariable{
-private:
+protected:
+    FiniteInterpolation<2 * halo> half;
     inline void _set_tile_pointer(){
         for (int i = 0; i < ntile_x; i++)
             for (int j = 0; j < ntile_y; j++)
                 tile[i][j].set(&value, &value_t, 
                         i * tile_rows + halo - i * offset_x, 
                         j * tile_cols + halo - j * offset_y,
-                        tile_rows, tile_cols, stag
+                        tile_rows, tile_cols
                         );
     }
-    void _copy(const PatchVariable &other){
+    inline void _copy(const PatchVariable &other){
         name        = other.name;
+        scale_by_mass = other.scale_by_mass;
         value       = other.value;
         value_t     = other.value_t;
         patch_rows  = other.patch_rows;
@@ -30,7 +32,6 @@ private:
         _set_tile_pointer();
         for (int i = 0; i < 4; i++) bnd[i]  = other.bnd[i];
     }
-
 public:
     std::string name;
     ArrayXXf value, value_t;
@@ -40,12 +41,15 @@ public:
     int tile_rows, tile_cols;
     TileType<halo> tile[ntile_x][ntile_y];
     Boundary bnd[4];
+    bool scale_by_mass;
 
     PatchVariable(){};
-    PatchVariable(std::string _name, int _nrows, int _ncols, char _stag,
+    PatchVariable(std::string _name, int _nrows, int _ncols, char _stag, 
+            bool _mass,
             Boundary bnd1 = DIRICHLET, Boundary bnd2 = DIRICHLET,
             Boundary bnd3 = DIRICHLET, Boundary bnd4 = DIRICHLET){
         name = _name;
+        scale_by_mass = _mass;
         value.setRandom(_nrows, _ncols);
         value_t.setZero(_nrows, _ncols);
         patch_rows = _nrows;
@@ -97,6 +101,23 @@ public:
         return tile[index / ntile_y][index % ntile_y];
     }
     inline Block<ArrayXXf> main(){
+        return value.block(halo, halo, 
+                patch_rows - 2 * halo, patch_cols - 2 * halo);
+    }
+    inline ArrayXXf main_stag(char _stag) const{
+        ArrayXXf buffer;
+        if (_stag == 'x'){
+            buffer = half.x(value.block(halo - 1, halo,
+                        patch_rows - 2 * halo + 2, patch_cols - 2 * halo));
+        } else if (_stag == 'y'){
+            buffer = half.y(value.block(halo, halo - 1,
+                        patch_rows - 2 * halo, patch_cols - 2 * halo + 2));
+        } else {
+            buffer = main();
+        }
+        return buffer;
+    }
+    inline Block<const ArrayXXf> main() const{
         return value.block(halo, halo, 
                 patch_rows - 2 * halo, patch_cols - 2 * halo);
     }
