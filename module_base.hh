@@ -14,7 +14,7 @@ public:
     float xlen, ylen;
     float dx, dy;
     float start, end, step;
-    float frame;
+    int frame;
 public:
     ModuleBase(std::string _fname = "dynamics.nc", long _current = 0){
         current = _current;

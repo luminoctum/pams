@@ -13,7 +13,6 @@ public:
     template<class ForwardModel>
     void do_step(ForwardModel forward, StateType &state, float dt){
         buffer = state;
-        for (size_t i = 0; i < state.size(); i++) buffer[i].reset_ptr();
         for (int i = 0; i < order - 1; i++){
             forward(buffer);
             for (size_t j = 0; j < state.size(); j++){

@@ -5,15 +5,40 @@
 enum Boundary{DIRICHLET, NEUMANN, PERIODIC};
 
 template <template <int>class TileType, int halo, int ntile_x, int ntile_y>
-struct PatchVariable{
+class PatchVariable{
+private:
+    inline void _set_tile_pointer(){
+        for (int i = 0; i < ntile_x; i++)
+            for (int j = 0; j < ntile_y; j++)
+                tile[i][j].set(&value, &value_t, 
+                        i * tile_rows + halo - i * offset_x, 
+                        j * tile_cols + halo - j * offset_y,
+                        tile_rows, tile_cols, stag
+                        );
+    }
+    void _copy(const PatchVariable &other){
+        name        = other.name;
+        value       = other.value;
+        value_t     = other.value_t;
+        patch_rows  = other.patch_rows;
+        patch_cols  = other.patch_cols;
+        stag        = other.stag;
+        offset_x    = other.offset_x;
+        offset_y    = other.offset_y;
+        tile_rows   = other.tile_rows;
+        tile_cols   = other.tile_cols;
+        _set_tile_pointer();
+        for (int i = 0; i < 4; i++) bnd[i]  = other.bnd[i];
+    }
+
+public:
     std::string name;
-    ArrayXXf value;
-    ArrayXXf value_t;
-    TileType<halo> tile[ntile_x][ntile_y];
+    ArrayXXf value, value_t;
     int patch_rows, patch_cols;
-    int tile_rows, tile_cols;
-    int offset_x, offset_y;
     char stag;
+    int offset_x, offset_y;
+    int tile_rows, tile_cols;
+    TileType<halo> tile[ntile_x][ntile_y];
     Boundary bnd[4];
 
     PatchVariable(){};
@@ -23,7 +48,10 @@ struct PatchVariable{
         name = _name;
         value.setRandom(_nrows, _ncols);
         value_t.setZero(_nrows, _ncols);
-        switch (_stag){
+        patch_rows = _nrows;
+        patch_cols = _ncols;
+        stag       = _stag;
+        switch (stag){
             case 'i':
                 offset_x = 0;
                 offset_y = 0;
@@ -45,16 +73,7 @@ struct PatchVariable{
         if ((tx % ntile_x) || (ty % ntile_y)){ASSERT_NOT_SUPPORTED;}
         tile_rows = tx / ntile_x;
         tile_cols = ty / ntile_y;
-        for (int i = 0; i < ntile_x; i++)
-            for (int j = 0; j < ntile_y; j++)
-                tile[i][j].set(&value, &value_t, 
-                        i * tile_rows + halo - i * offset_x, 
-                        j * tile_cols + halo - j * offset_y,
-                        tile_rows, tile_cols, _stag
-                        );
-        patch_rows = _nrows;
-        patch_cols = _ncols;
-        stag       = _stag;
+        _set_tile_pointer();
         if (bnd2 == 0 && bnd3 == 0 && bnd4 == 0){
             for (int i = 0; i < 4; i++) bnd[i] = bnd1;
         } else if (bnd3 == 0 && bnd4 == 0){
@@ -66,21 +85,20 @@ struct PatchVariable{
         if (bnd[0] == PERIODIC){if (stag == 'x') { setLeftRightSame(); }}
         if (bnd[2] == PERIODIC){if (stag == 'y') { setBottomTopSame(); }}
     }
+    PatchVariable(const PatchVariable &other){
+        _copy(other);
+    }
+    PatchVariable& operator= (const PatchVariable &other){
+        if (this == &other) return *this;
+        _copy(other);
+        return *this;
+    }
     inline TileType<halo>& operator()(int index){
         return tile[index / ntile_y][index % ntile_y];
     }
     inline Block<ArrayXXf> main(){
         return value.block(halo, halo, 
                 patch_rows - 2 * halo, patch_cols - 2 * halo);
-    }
-    inline void reset_ptr(){
-        for (int i = 0; i < ntile_x; i++)
-            for (int j = 0; j < ntile_y; j++)
-                tile[i][j].set(&value, &value_t, 
-                        i * tile_rows + halo - i * offset_x, 
-                        j * tile_cols + halo - j * offset_y,
-                        tile_rows, tile_cols, stag
-                        );
     }
     inline void setLeftRightZero(){
         for (int i = 0; i <= halo; i++){

@@ -47,7 +47,15 @@ public:
         vx.main_t() -= diff.x(0.5 * phi.extendx() * phi.extendx(), dx);
         vy.main_t() -= diff.y(0.5 * phi.extendy() * phi.extendy(), dy);
     }
-    inline void check_energy(
+    inline void diffusion(
+            Tile &phi,
+            Tile &uwind,
+            Tile &vwind){
+        phi.main_t() += 1E-4 * (dissip.x(phi.main()) + dissip.y(phi.main()));
+        uwind.main_t() += 1E-4 * (dissip.x(uwind.main()) + dissip.y(uwind.main()));
+        vwind.main_t() += 1E-4 * (dissip.x(vwind.main()) + dissip.y(vwind.main()));
+    }
+    inline void total_energy(
             const Tile &phi,
             const Tile &uwind,
             const Tile &vwind,
@@ -57,14 +65,6 @@ public:
             + uwind.mainx(-1) * uwind.mainx(-1) / phi.main()
             + vwind.mainy(-1) * vwind.mainy(-1) / phi.main()
             );
-    }
-    inline void diffusion(
-            Tile &phi,
-            Tile &uwind,
-            Tile &vwind){
-        phi.main_t() += 1E-4 * (dissip.x(phi.main()) + dissip.y(phi.main()));
-        uwind.main_t() += 1E-4 * (dissip.x(uwind.main()) + dissip.y(uwind.main()));
-        vwind.main_t() += 1E-4 * (dissip.x(vwind.main()) + dissip.y(vwind.main()));
     }
     template<typename StateType>
     void operator()(StateType &state){
@@ -78,7 +78,13 @@ public:
             gradient(state[0](i), state[1](i), state[2](i));
             coriolis(f, state[1](i), state[2](i));
             //diffusion(state[0](i), state[1](i), state[2](i));
-            //check_energy(state[0](i), state[1](i), state[2](i), state[3](i));
+        }
+    }
+    template<typename StateType>
+    void check_energy(StateType &state){
+        #pragma omp parallel for
+        for (int i = 0; i < ntile_x * ntile_y; i++){
+            total_energy(state[0](i), state[1](i), state[2](i), state[3](i));
         }
     }
 };
