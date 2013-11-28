@@ -62,20 +62,20 @@ public:
                 iend - istart, jend - jstart
                 );
     }
-    inline ArrayXXf mainx() const{
+    inline ArrayXXf mainx(int ext = 1) const{
         ArrayXXf buffer;
         buffer = half.x(patch->block(
                 is, jstart, 
                 ie - is, jend - jstart
-                )).block(istart - is - 1, 0, iend - istart + 1, jend - jstart);
+                )).block(istart - is - ext, 0, iend - istart + ext, jend - jstart);
         return buffer;
     }
-    inline ArrayXXf mainy() const{
+    inline ArrayXXf mainy(int ext = 1) const{
         ArrayXXf buffer;
         buffer = half.y(patch->block(
                 istart, js, 
                 iend - istart, je - js
-                )).block(0, jstart - js - 1, iend - istart, jend - jstart + 1);
+                )).block(0, jstart - js - ext, iend - istart, jend - jstart + ext);
         return buffer;
     }
     inline ArrayXXf mainq() const{

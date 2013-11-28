@@ -52,7 +52,7 @@ protected:
     static const float coeff[4][7];
 public:
     template<typename Derived>
-    ArrayXXf x(const ArrayBase<Derived> &var, float dx) const{
+    ArrayXXf x(const ArrayBase<Derived> &var, float dx = 1.) const{
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols);
         for (int i = 0; i < nrows; i++){
@@ -63,7 +63,7 @@ public:
         return result;
     }
     template<typename Derived>
-    ArrayXXf y(const ArrayBase<Derived> &var, float dy) const{
+    ArrayXXf y(const ArrayBase<Derived> &var, float dy = 1.) const{
         int r, nrows = var.rows(), ncols = var.cols();
         ArrayXXf result = ArrayXXf::Zero(nrows, ncols);
         for (int i = 0; i < ncols; i++){

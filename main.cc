@@ -2,29 +2,32 @@
 using namespace std;
 
 int main(){
-    Patch a(6, 6, 'i');
-    Patch u(7, 6, 'x');
-    Patch v(6, 7, 'y');
-    ForwardModel forward;
-    StateVector state;
+    float time;
+    ForwardModel model;
     Runge_Kutta<4, StateVector> stepper;
-
-    u.setLeftRightZero();
-    v.setBottomTopZero();
-    state.push_back(a);
-    state.push_back(u);
-    state.push_back(v);
+    Patch a("phi", model.nrows, model.ncols, 'i', PERIODIC);
+    Patch u("uwind", model.nrows + 1, model.ncols, 'x', PERIODIC);
+    Patch v("vwind", model.nrows, model.ncols + 1, 'y', PERIODIC);
+    /*
+    Patch a("phi", model.nrows, model.ncols, 'i', DIRICHLET);
+    Patch u("uwind", model.nrows + 1, model.ncols, 'x', DIRICHLET);
+    Patch v("vwind", model.nrows, model.ncols + 1, 'y', DIRICHLET);
+    */
+    StateVector state{a,u,v};
     for (size_t i = 0; i < state.size(); i++){
         state[i].reset_ptr();
-        cout << state[i].value << endl << endl;
+        state[i].value = model.ncVar[state[i].name];
+        state[i].update(0.);
     }
-    cout << state[0].value.sum() << endl << endl;
-
-    stepper.do_step(forward, state, 0.5);
-
-    for (size_t i = 0; i < state.size(); i++){
-        state[i].update(1.0);
-        cout << state[i].value << endl << endl;
+    for (time = model.start; time < model.end; time += model.step){
+        cout << time << endl;
+        model.ncwrite(state, time);
+        /*
+        model(state);
+        for (size_t i = 0; i < state.size(); i++){
+            state[i].update(model.step);
+        }*/
+        stepper.do_step(model, state, model.step);
     }
-    cout << state[0].value.sum() << endl << endl;
+    model.ncwrite(state, time);
 }

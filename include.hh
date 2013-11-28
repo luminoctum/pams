@@ -8,8 +8,8 @@
 #include "module_shallow_water.hh"
 
 /* define domain decomposition */
-#define     NTILES_IN_X     1
-#define     NTILES_IN_Y     1
+#define     NTILES_IN_X     2
+#define     NTILES_IN_Y     2
 /* define interpolation order */
 #define     O_INTERP        2
 
