@@ -17,10 +17,10 @@ public:
     int frame;
     Eigen::ArrayXXf buffer;
 public:
-    ModuleBase(std::string _fname = "dynamics.nc", long _current = 0){
-        current = _current;
+    ModuleBase(std::string _fname = "dynamics.nc"){
         filename = _fname;
         NcFile dataFile(_fname.c_str(), NcFile::ReadOnly);
+        current = dataFile.get_dim("time")->size() - 1;
         if (!dataFile.is_valid()){ ASSERT_FILE_NOT_FOUND(_fname); }
         for (int i = 0; i < dataFile.num_vars(); i++){
             NcVar *data = dataFile.get_var(i);
@@ -36,7 +36,7 @@ public:
                     break;
                 case 3:
                     buffer.resize(edges[2], edges[1]);
-                    data->set_cur(_current, 0, 0);
+                    data->set_cur(current, 0, 0);
                     data->get(&buffer(0, 0), 1, edges[1], edges[2]);
                     break;
             }
@@ -46,7 +46,7 @@ public:
         ncols   = dataFile.get_att("ny")->as_int(0);
         xlen    = dataFile.get_att("xlen")->as_float(0);
         ylen    = dataFile.get_att("ylen")->as_float(0);
-        start   = dataFile.get_att("start")->as_float(0);
+        start   = ncVar["time"](current);
         end     = dataFile.get_att("end")->as_float(0);
         step    = dataFile.get_att("step")->as_float(0);
         frame   = dataFile.get_att("frame")->as_int(0);

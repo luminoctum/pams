@@ -1,13 +1,27 @@
 #include "include.hh"
+#include "getopt.h"
+//#include "unistd.h"
 using namespace std;
 
-int main(){
+int main(int argc, char *argv[]){
+    int op = 0;
+    long restart = 0;
+    while ((op = getopt(argc, argv, "c:")) != -1)
+        switch (op){
+            case 'c':
+                restart = atoi(optarg);
+                break;
+            default:
+                abort();
+        }
+    
     float time;
     ads::Timer timer;
     ForwardModel model;
     Runge_Kutta<4, StateVector> stepper;
     int nrows = model.nrows + O_INTERP;
     int ncols = model.ncols + O_INTERP;
+    long steps = 0;
     Patch a("phi", nrows, ncols, 'i', false, PERIODIC, DIRICHLET);
     Patch u("uwind", nrows + 1, ncols, 'x', true, PERIODIC, DIRICHLET);
     Patch v("vwind", nrows, ncols + 1, 'y', true, PERIODIC, DIRICHLET);
@@ -27,13 +41,13 @@ int main(){
             "Steps", "Total Mass", "Total Energy", "Model Time (s)", "Elapsed Time (s)"
     );
     timer.tic();
-    for (time = model.start; time < model.end; time += model.step){
+    for (time = model.start; time < model.end + restart; time += model.step){
         stepper.do_step(model, state, model.step);
-        model.check_energy(state);
-        if (model.current % model.frame == 0) { 
+        steps++;
+        if (steps % model.frame == 0)
             model.ncwrite(state, time + model.step);
-        }
-        if (model.current % (1 * model.frame) == 0){
+        if (steps % (10 * model.frame) == 0){
+            model.check_energy(state);
             printf("%-8d%-16.3E%-16.3E%-16.3E%-16.3f\n", 
                     model.current, 
                     state[0].main().sum(), state[4].main().sum(),
