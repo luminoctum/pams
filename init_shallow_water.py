@@ -26,7 +26,7 @@ if __name__ == '__main__':
             'xlen'    :   40.E6,
             'ylen'    :   10.E6,
             'start'   :   0.,
-            'end'     :   360000.,
+            'end'     :   720000.,
             'step'    :   600.,
             'frame'   :   1,
             'f0'      :   1.E-4,

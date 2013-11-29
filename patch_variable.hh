@@ -2,9 +2,9 @@
 #define PATCH_VARIABLE
 #include "tile_variable.hh"
 
-enum Boundary{DIRICHLET, NEUMANN, PERIODIC};
+enum Boundary{UNKNOWN, DIRICHLET, NEUMANN, PERIODIC};
 
-template <template <int>class TileType, int halo, int ntile_x, int ntile_y>
+template <int halo, int ntile_x, int ntile_y>
 class PatchVariable{
 protected:
     FiniteInterpolation<2 * halo> half;
@@ -39,15 +39,15 @@ public:
     char stag;
     int offset_x, offset_y;
     int tile_rows, tile_cols;
-    TileType<halo> tile[ntile_x][ntile_y];
+    TileVariable<halo> tile[ntile_x][ntile_y];
     Boundary bnd[4];
     bool scale_by_mass;
 
     PatchVariable(){};
-    PatchVariable(std::string _name, int _nrows, int _ncols, char _stag, 
-            bool _mass,
-            Boundary bnd1 = DIRICHLET, Boundary bnd2 = DIRICHLET,
-            Boundary bnd3 = DIRICHLET, Boundary bnd4 = DIRICHLET){
+    PatchVariable(std::string _name, int _nrows, int _ncols, 
+            char _stag = 'i', bool _mass = false,
+            Boundary bnd1 = UNKNOWN, Boundary bnd2 = UNKNOWN,
+            Boundary bnd3 = UNKNOWN, Boundary bnd4 = UNKNOWN){
         name = _name;
         scale_by_mass = _mass;
         value.setRandom(_nrows, _ncols);
@@ -78,9 +78,9 @@ public:
         tile_rows = tx / ntile_x;
         tile_cols = ty / ntile_y;
         _set_tile_pointer();
-        if (bnd2 == 0 && bnd3 == 0 && bnd4 == 0){
+        if (bnd1 !=0 && bnd2 == 0 && bnd3 == 0 && bnd4 == 0){
             for (int i = 0; i < 4; i++) bnd[i] = bnd1;
-        } else if (bnd3 == 0 && bnd4 == 0){
+        } else if (bnd1 != 0 && bnd2 != 0 && bnd3 == 0 && bnd4 == 0){
             for (int i = 0; i < 2; i++) bnd[i] = bnd1;
             for (int i = 2; i < 4; i++) bnd[i] = bnd2;
         } else{
@@ -97,7 +97,7 @@ public:
         _copy(other);
         return *this;
     }
-    inline TileType<halo>& operator()(int index){
+    inline TileVariable<halo>& operator()(int index){
         return tile[index / ntile_y][index % ntile_y];
     }
     inline Block<ArrayXXf> main(){
