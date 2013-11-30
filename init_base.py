@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 from pylab import *
 from pycli.ncio.ncfile import *
+from pycli.ode.gridop import *
 
 class InitBase:
     var_file    = 'variables.lst'
@@ -20,6 +21,8 @@ class InitBase:
         self.frame  = setups['frame']
         self.xaxis  = linspace(0, self.xlen, self.nx)
         self.yaxis  = linspace(0, self.ylen, self.ny)
+        self.xaxisb = tohalf(self.xaxis, ext = 'both')
+        self.yaxisb = tohalf(self.yaxis, ext = 'both')
     def initialize(self):
         self.set_variables()
         self.write_ncfile()

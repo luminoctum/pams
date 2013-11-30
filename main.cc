@@ -9,7 +9,7 @@ int main(int argc, char *argv[]){
     while ((op = getopt(argc, argv, "c:")) != -1)
         switch (op){
             case 'c':
-                restart = atoi(optarg);
+                restart = atol(optarg);
                 break;
             default:
                 abort();
@@ -34,13 +34,15 @@ int main(int argc, char *argv[]){
         } else {
             state[i].main() = model.ncVar[state[i].name];
         }
-        state[i].update(0.);
+        state[i].set_halo();
     }
+    //cout << state[2].value << endl;
     cout << model << endl;
     printf("%-8s%-16s%-16s%-16s%-16s\n", 
             "Steps", "Total Mass", "Total Energy", "Model Time (s)", "Elapsed Time (s)"
     );
     timer.tic();
+    // a bug in the restart run, model end is not updated
     for (time = model.start; time < model.end + restart; time += model.step){
         stepper.do_step(model, state, model.step);
         steps++;

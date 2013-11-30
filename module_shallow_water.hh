@@ -20,7 +20,7 @@ public:
         for (int i = 0; i < nrows + order; i++)
             for (int j = 0; j < ncols + order; j++)
                 f.value(i, j) = f0 + beta * dy * (j - (ncols + order - 1.)/2.);
-        //ALARM(f.value);
+                //f.value(i, j) = f0 * sin(PI * j / (ncols + order - 1));
     }
     inline void advection(
             const Tile &uflux, 
@@ -47,8 +47,10 @@ public:
             Tile &vflux) const{
         uflux.main_t() += corf.mainx() * vflux.v_to_u();
         vflux.main_t() += - corf.mainy() * uflux.u_to_v();
-        //uflux.main_t() += f0 * vflux.v_to_u();
-        //vflux.main_t() += - f0 * uflux.u_to_v();
+        /*
+        uflux.main_t() += f0 * vflux.v_to_u();
+        vflux.main_t() += - f0 * uflux.u_to_v();
+        */
     }
     inline void gradient(
             const Tile &phi,
@@ -57,6 +59,7 @@ public:
         vx.main_t() -= diff.x(0.5 * phi.extendx() * phi.extendx(), dx);
         vy.main_t() -= diff.y(0.5 * phi.extendy() * phi.extendy(), dy);
     }
+    // diffusion code is not correct for domain decomposition: boundary
     inline void diffusion(Tile &var) const{
         var.main_t() += 0.03 / step * (dissip.x(var.main()) + dissip.y(var.main()));
     }

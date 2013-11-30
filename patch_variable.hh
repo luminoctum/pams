@@ -146,7 +146,6 @@ public:
         value.col(patch_cols - 2 * halo) = buffer;
     }
     void update(float dt){
-        // for now, the patch is the whole domain, halo update is merged into update
         if (stag == 'x'){
             for (int i = 1; i < ntile_x; i++)
                 value_t.row(i * tile_rows + halo - i * offset_x) /= 2;
@@ -158,34 +157,59 @@ public:
             if (bnd[2] == DIRICHLET){ value_t.col(halo).setZero(); }
             if (bnd[3] == DIRICHLET){ value_t.col(patch_cols - halo - 1).setZero(); }
         }
-        value = value + value_t * dt;
+        value += value_t * dt;
         value_t.setZero();
-        if (bnd[0] == NEUMANN){
-            for (int i = 0; i < halo; i++) value.row(i) = value.row(halo);
-        } else if (bnd[0] == PERIODIC){
-            for (int i = 0; i < halo; i++) 
+        // periodic and neumann update
+        if (bnd[0] == PERIODIC){
+            for (int i = 0; i < halo; i++){
                 value.row(i) = value.row(patch_rows + i - 2 * halo - offset_x);
-        } 
-        if (bnd[1] == NEUMANN){
-            for (int i = 0; i < halo; i++) 
-                value.row(patch_rows - 1 - i) = value.row(patch_rows - 1 - halo);
-        } else if (bnd[1] == PERIODIC){
-            for (int i = 0; i < halo; i++) 
                 value.row(patch_rows - 1 - i) = value.row(2 * halo - 1 - i + offset_x);
+            }
+        } else {
+            if (bnd[0] == NEUMANN){
+                for (int i = 0; i < halo; i++) 
+                    value.row(i) = value.row(halo);
+            }
+            if (bnd[1] == NEUMANN){
+                for (int i = 0; i < halo; i++) 
+                    value.row(patch_rows - 1 - i) = value.row(patch_rows - 1 - halo);
+            }
         }
-        if (bnd[2] == NEUMANN){
-            for (int i = 0; i < halo; i++) value.col(i) = value.col(halo);
-        } else if (bnd[2] == PERIODIC){
-            for (int i = 0; i < halo; i++) 
+        if (bnd[2] == PERIODIC){
+            for (int i = 0; i < halo; i++){ 
                 value.col(i) = value.col(patch_cols + i - 2 * halo - offset_y);
-        } 
-        if (bnd[3] == NEUMANN){
-            for (int i = 0; i < halo; i++) 
-                value.col(patch_cols - 1 - i) = value.col(patch_cols - 1 - halo);
-        } else if (bnd[3] == PERIODIC){
-            for (int i = 0; i < halo; i++) 
                 value.col(patch_cols - 1 - i) = value.col(2 * halo - 1 - i + offset_y);
-        } 
+            }
+        } else {
+            if (bnd[2] == NEUMANN){
+                for (int i = 0; i < halo; i++) 
+                    value.col(i) = value.col(halo);
+            }
+            if (bnd[3] == NEUMANN){
+                for (int i = 0; i < halo; i++) 
+                    value.col(patch_cols - 1 - i) = value.col(patch_cols - 1 - halo);
+            }
+        }
+        // neumann update
+    }
+    void set_halo(){
+        update(0.);
+        if (bnd[0] == DIRICHLET){
+            for (int i = 0; i < halo; i++)
+                value.row(i) = value.row(halo);
+        }
+        if (bnd[1] == DIRICHLET){
+            for (int i = 0; i < halo; i++)
+                value.row(patch_rows - 1 - i) = value.row(patch_rows - 1 - halo);
+        }
+        if (bnd[2] == DIRICHLET){
+            for (int i = 0; i < halo; i++)
+                value.col(i) = value.col(halo);
+        }
+        if (bnd[3] == DIRICHLET){
+            for (int i = 0; i < halo; i++)
+                value.col(patch_cols - 1 - i) = value.col(patch_cols - 1 - halo);
+        }
     }
 };
 
